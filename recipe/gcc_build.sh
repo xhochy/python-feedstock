@@ -225,6 +225,9 @@ make -j${CPU_COUNT} -C ${_buildd_shared} \
 make -j${CPU_COUNT} -C ${_buildd_shared} \
         EXTRA_CFLAGS="${EXTRA_CFLAGS}" \
         LIBRARY=libpython${VER}m-pic.a libpython${VER}m-pic.a
+# If the LTO info in the normal lib is problematic (using different compilers for example
+# we also provide a 'nolto' version).
+cp -pf ${_buildd_shared}/libpython${VER}m-pic.a ${PREFIX}/lib/libpython${VER}m.nolto.a
 
 if [[ ${_OPTIMIZED} == yes ]]; then
   make -C ${_buildd_static} install
@@ -297,6 +300,14 @@ pushd ${PREFIX}
       ${HOST}-strip -S lib/libpython${VER}m.a
     else
       strip -S lib/libpython${VER}m.a
+    fi
+  fi
+  if [[ -f libpython${VER}.nolto.a ]]; then
+    chmod +w lib/libpython${VER}m.nolto.a
+    if [[ -n ${HOST} ]]; then
+      ${HOST}-strip -S lib/libpython${VER}m.nolto.a
+    else
+      strip -S lib/libpython${VER}m.nolto.a
     fi
   fi
   CONFIG_LIBPYTHON=$(find lib/python${VER}/config-${VER}${DBG}m* -name "libpython${VER}m.a")
